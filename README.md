@@ -4,8 +4,6 @@ A smart-mat dashboard that helps catch diabetic foot problems early. It combines
 
 Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors) and works today with **fully simulated sensors**, so you can try everything without any hardware.
 
-> ⚠️ Screening aid / decision support only – **not a medical diagnosis**.
-
 ## The problem
 
 Diabetic foot is a serious complication of diabetes that can progress silently to ulcers, severe infections, lower-limb amputation and death.
