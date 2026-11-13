@@ -1,0 +1,6 @@
+PySide6
+pyqtgraph
+PyOpenGL
+numpy
+opencv-python
+pyserial
