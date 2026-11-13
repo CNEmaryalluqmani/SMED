@@ -2,7 +2,7 @@
 
 A smart-mat dashboard that helps catch diabetic foot problems early. It combines pressure, weight, pulse, temperature and camera analysis for **both feet** and turns them into a simple risk stage (0–3) with clear findings and advice, in English and Arabic.
 
-Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors) and works today with **fully simulated sensors**, so you can try everything without any hardware.
+Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors). All sensors have been tested on real hardware, and the dashboard also runs with **simulated sensors by default**, so you can try everything without any hardware.
 
 ## The problem
 
@@ -49,16 +49,16 @@ You can also change the simulated situation live from the box at the top of the 
 
 | Function | Component | Status |
 |---|---|---|
-| Foot pressure | FSR array (12 zones) | simulated |
-| Weight | Load cell + HX711 | simulated |
-| Pulse / SpO₂ | PPG sensor | simulated |
-| Ambient | DHT11 | simulated |
+| Foot pressure | FSR array (12 zones) | tested |
+| Weight | Load cell + HX711 | tested |
+| Pulse / SpO₂ | PPG sensor | tested |
+| Ambient | DHT11 | tested |
 | Thermal imaging | MLX90640 | tested (`--thermal mlx90640`) |
-| Foot camera | ESP32-CAM over USB | sketch included |
-| Vibration alert | LRA motor | simulated |
-| Disinfection | UV-C lamp | simulated, with software safety lock |
+| Foot camera | ESP32-CAM over USB | tested (sketch included) |
+| Vibration alert | LRA motor | tested |
+| Disinfection | UV-C lamp | tested, with software safety lock |
 
-Controller: **Raspberry Pi** (dashboard) + **Arduino Nano** (sensors). Connecting the real sensors is the next stage: each sensor is one class in `sensors.py`, so you replace the simulated values with the real readings and mark the source as `LIVE`.
+Controller: **Raspberry Pi** (dashboard) + **Arduino Nano** (sensors). The dashboard shows live readings from the sensors (marked `LIVE`) and uses simulated values when no hardware is connected. Each sensor is one class in `sensors.py`.
 
 > **UV-C safety:** the software lock is not enough on real hardware – always add a hardware interlock too.
 
