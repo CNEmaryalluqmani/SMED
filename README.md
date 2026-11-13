@@ -2,7 +2,7 @@
 
 A smart-mat dashboard that helps catch diabetic foot problems early. It combines pressure, weight, pulse, temperature and camera analysis for **both feet** and turns them into a simple risk stage (0–3) with clear findings and advice, in English and Arabic.
 
-Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors). All sensors have been tested on real hardware, and the dashboard also runs with **simulated sensors by default**, so you can try everything without any hardware.
+Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors). All sensors have been tested on real hardware, and the dashboard falls back to **simulated sensors** when no hardware is connected, so you can try everything without any hardware.
 
 ## The problem
 
@@ -62,7 +62,7 @@ Controller: **Raspberry Pi** (dashboard) + **Arduino Nano** (sensors). The dashb
 
 > **UV-C safety:** the software lock is not enough on real hardware – always add a hardware interlock too.
 
-## Using real hardware
+## Connecting the sensors
 
 - **Arduino sensors:** make `SensorHub.read()` in `sensors.py` return the real value under the same key (`fsr`, `bpm` / `spo2` / `pi` / `ppg_samples`, `dht_t` / `dht_h`) and set the badge to `LIVE` in `SensorHub.sources`. The tiles follow automatically.
 - **Thermal camera:** `--thermal mlx90640`, or write your own class in `thermal_camera.py`.
