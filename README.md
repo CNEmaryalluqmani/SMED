@@ -1,4 +1,4 @@
-# SMED – Diabetic Foot Monitor
+# SMED – Smart Mat for Early Detection
 
 A smart-mat dashboard that helps catch diabetic foot problems early. It combines pressure, weight, pulse, temperature and camera analysis for **both feet** and turns them into a simple risk stage (0–3) with clear findings and advice, in English and Arabic.
 
@@ -6,15 +6,13 @@ Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for th
 
 > ⚠️ Screening aid / decision support only – **not a medical diagnosis**.
 
-<!-- Add a screenshot of the dashboard: upload it to the repo (e.g. docs/dashboard.png), then remove this line and the arrows around the next line -->
-<!-- ![SMED dashboard](docs/dashboard.png) -->
-
-<!-- Add the demo video link here once the Google Drive folder is shared:
-**Demo video:** https://drive.google.com/... -->
-
 ## The problem
 
-People with diabetes can lose feeling in their feet, so pressure spots, heat and small wounds go unnoticed until they become ulcers. SMED watches the feet continuously and warns early, before the damage is serious.
+Diabetic foot is a serious complication of diabetes that can progress silently to ulcers, severe infections, lower-limb amputation and death.
+
+Pain is our body's alarm system, but for diabetic patients this alarm is broken.
+
+Delayed detection of early warning signs can allow preventable foot damage to progress to life-threatening complications. SMED watches the feet continuously and warns early, before the damage is serious.
 
 ## What it does
 
@@ -44,7 +42,6 @@ Useful options:
 | `--camera` | `demo` \| `serial:PORT` \| `webcam:0` \| `file:x.jpg` \| `http://...` |
 | `--thermal` | `sim` \| `pseudo` \| `mlx90640` |
 | `--model` | path to a trained model, e.g. `foot_model.pt` |
-| `--lang` | `en` \| `ar` |
 
 You can also change the simulated situation live from the box at the top of the window.
 
@@ -86,7 +83,7 @@ In the thermal slot choose *Simulated thermal camera*, *Redness map from the cam
 | `main.py` | builds the window from the modules below and runs it |
 | `config.py` | sizes, thresholds, zones – tune everything here |
 | `camera.py` | camera input and the thermal / AI analysis panel with a source selector |
-| `thermal_camera.py` | thermal camera (simulated + MLX90640 skeleton) and left-vs-right analysis |
+| `thermal_camera.py` | thermal camera (simulated + MLX90640) and left-vs-right analysis |
 | `ai_analysis.py` | image analysis of the foot (redness, dark areas, optional YOLO model) |
 | `services.py` | status of both feet, risk stage 0–3, findings and advice (EN / AR) |
 | `sensors.py` | one model per sensor with simulated values (FSR, load cell, PPG, DHT11, LRA, UV) |
@@ -100,14 +97,10 @@ In the thermal slot choose *Simulated thermal camera*, *Redness map from the cam
 
 ## Team
 
-<!-- Add the team members here, for example:
-- Name – role
-- Name – role -->
-
----
-
-## ملخص بالعربي
-
-**SMED** نظام مراقبة للقدم السكرية يجمع قراءات الضغط والوزن والنبض والحرارة وتحليل الصورة للقدمين، ويحولها إلى مستوى خطورة من 0 إلى 3 مع نتائج ونصائح بالعربي والإنجليزي. يعمل الحين بحساسات محاكاة بالكامل بدون أي جهاز، وربط الحساسات الحقيقية هو المرحلة القادمة. لتشغيله: `pip install -r requirements.txt` ثم `python main.py`.
-
-> هذا النظام أداة مساعدة للفحص المبدئي ودعم القرار فقط، وليس تشخيصاً طبياً.
+| Name | Role |
+|---|---|
+| Maryam Saleh Alluqmani | Prototype Design & Sensor Integration |
+| Hala Mohammed Abousamak | Market Research & Project Feasibility |
+| Lina Agil Alattas | Project Lead & Coordination |
+| Lama Sultan Alghamdi | Medical Research & Clinical Applications |
+| Amjad Dhaifalluh Alotaibi | AI & Application Design |
