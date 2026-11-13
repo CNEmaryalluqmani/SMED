@@ -1,76 +1,113 @@
-# MEDthon - Diabetic Foot Monitor
+# SMED – Diabetic Foot Monitor
 
-## Run
-    pip install -r requirements.txt
-    python main.py                      # everything simulated, no hardware needed
+A smart-mat dashboard that helps catch diabetic foot problems early. It combines pressure, weight, pulse, temperature and camera analysis for **both feet** and turns them into a simple risk stage (0–3) with clear findings and advice, in English and Arabic.
 
-Options: `--windowed` (maximised window instead of full screen), `--scenario normal|hotspot|overload|ulcer`, `--camera demo|serial:PORT|webcam:0|file:x.jpg|http://...`,
-`--thermal sim|pseudo|mlx90640`, `--model foot_model.pt`, `--lang en|ar`
+Built for the **MEDthon** hackathon. Runs on a Raspberry Pi (Arduino Nano for the sensors) and works today with **fully simulated sensors**, so you can try everything without any hardware.
+
+> ⚠️ Screening aid / decision support only – **not a medical diagnosis**.
+
+<!-- Add a screenshot of the dashboard: upload it to the repo (e.g. docs/dashboard.png), then remove this line and the arrows around the next line -->
+<!-- ![SMED dashboard](docs/dashboard.png) -->
+
+<!-- Add the demo video link here once the Google Drive folder is shared:
+**Demo video:** https://drive.google.com/... -->
+
+## The problem
+
+People with diabetes can lose feeling in their feet, so pressure spots, heat and small wounds go unnoticed until they become ulcers. SMED watches the feet continuously and warns early, before the damage is serious.
+
+## What it does
+
+- **Pressure map** of both feet (12-zone FSR array) and an interactive **3D view** of the feet standing on the sensor mat.
+- **Thermal analysis** comparing the left foot against the right to spot hot areas.
+- **AI image analysis** of the foot camera (redness, dark areas, optional trained YOLO model).
+- **Pulse, SpO₂ and perfusion** from a PPG sensor, with a live waveform.
+- **Weight** from a load cell (HX711); the system knows when a person is standing on the mat.
+- **Ambient** temperature and humidity (DHT11).
+- **Vibration alert (LRA motor)** that buzzes while a foot stays at WARNING or worse.
+- **UV-C disinfection** of the mat with a safety lock: the lamp can only turn on while the mat is empty.
+- **Risk stage 0–3** per foot with findings and advice in **English / Arabic**.
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+python main.py          # everything simulated, no hardware needed
+```
+
+Useful options:
+
+| Option | Values |
+|---|---|
+| `--windowed` | maximised window instead of full screen |
+| `--scenario` | `normal` \| `hotspot` \| `overload` \| `ulcer` |
+| `--camera` | `demo` \| `serial:PORT` \| `webcam:0` \| `file:x.jpg` \| `http://...` |
+| `--thermal` | `sim` \| `pseudo` \| `mlx90640` |
+| `--model` | path to a trained model, e.g. `foot_model.pt` |
+| `--lang` | `en` \| `ar` |
+
 You can also change the simulated situation live from the box at the top of the window.
 
-## Layout
-* **Sensors panel** (left side, independent - F3 hides / shows it): ONE tile per sensor - big value, a coloured range bar with a
-  marker, a short history line and a badge showing where the value comes from (SIMULATED / LIVE / FILE).
-  Tiles: pressure (FSR), weight (load cell), pulse (PPG), ambient (DHT11), thermal camera, camera analysis, vibration motor, UV disinfection.
-  When you connect the Arduino: make `SensorHub.read()` in sensors.py return the real value under the same key
-  (`fsr`, `bpm`/`spo2`/`pi`/`ppg_samples`, `dht_t`/`dht_h`) and set the badge to LIVE in `SensorHub.sources` -
-  the tile follows automatically. (The maps and 3D feet still use the simulated 12-zone array view.)
-* **Dashboard**: top row = thermal analysis and AI analysis (same size); bottom row (same height) = pressure map, the **pulse column**
-  (live waveform on top, pulse / SpO2 / perfusion values directly under it) and the **"Weight, UV and LRA" column** (weight with a scale picture,
-  UV disinfection with a lamp picture, and a simple vibration-motor reading: level %, state, bar, and simulated frequency / acceleration / current
-  while it buzzes). While a foot stays at WARNING or worse and a person is on the mat, the motor repeats its buzz every `LRA_COOLDOWN` seconds.
-  Then 3D feet and services.
-* **Vibration motor (LRA)**: its simulated value (vibration level 0-100 %) is shown as a small card in the "Weight, UV and LRA" column
-  and as a tile in the side Sensors panel. An alert still makes the motor buzz by itself (settings: `strength`, `pattern`, `duration_ms` of `LRAPanel`,
-  which now only holds the motor logic). Its model is `LRAActuator` in sensors.py (`telemetry()["level"]` = the simulated value).
-* **Ambient (DHT11)**: shown ONLY in the header (thermometer + droplet) and in the side Sensors panel - no separate panel in the
-  middle of the dashboard any more (the pulse column sits beside the pressure map).
-* 3D feet: solid light-beige feet standing on a grid (the sensor mat). The colours on the mat under each foot are the
-  pressure readings (blue = low, red = high) and show as a coloured rim around each foot.
-  "Feet: See-through" or the "Under" view shows the whole map under the foot.
-* **Weight (load cell + HX711)**: tile with a scale picture (dial + needle, foot prints when someone stands on it). Weight >= `WEIGHT_PRESENT_KG`
-  (config.py) means a person is on the mat.
-* **UV disinfection (UV-C lamp)**: an output with a SAFETY LOCK - the lamp is only allowed on while the mat is EMPTY. States: LOCKED (person on the mat,
-  red padlock) -> WAITING (mat empty, `UV_START_DELAY`) -> UV ON (purple glow and rays, `UV_CYCLE_SECONDS`) -> CLEAN (green tick).
-  Try it with the "Person on the mat" tick box in the header (it also sets the simulated weight and pressure). On real hardware add a hardware
-  interlock too; never rely on software alone for UV-C.
-* The pulse rate and SpO2 are also shown in the header, so you always see them.
-* Pictures and text scale with the screen. On a very small screen the dashboard gets scroll bars.
+**Keys:** `F11` full screen on/off · `Esc` leave full screen · `F3` show/hide the sensors panel · `Ctrl+Q` quit.
 
-## Full screen
-The window opens full screen and scales its panels to the screen size.
-F11 = switch full screen on/off, Esc = leave full screen, Ctrl+Q = quit, F3 = sensors panel.
+## Hardware
 
-## Files
+| Function | Component | Status |
+|---|---|---|
+| Foot pressure | FSR array (12 zones) | simulated |
+| Weight | Load cell + HX711 | simulated |
+| Pulse / SpO₂ | PPG sensor | simulated |
+| Ambient | DHT11 | simulated |
+| Thermal imaging | MLX90640 | tested (`--thermal mlx90640`) |
+| Foot camera | ESP32-CAM over USB | sketch included |
+| Vibration alert | LRA motor | simulated |
+| Disinfection | UV-C lamp | simulated, with software safety lock |
+
+Controller: **Raspberry Pi** (dashboard) + **Arduino Nano** (sensors). Connecting the real sensors is the next stage: each sensor is one class in `sensors.py`, so you replace the simulated values with the real readings and mark the source as `LIVE`.
+
+> **UV-C safety:** the software lock is not enough on real hardware – always add a hardware interlock too.
+
+## Using real hardware
+
+- **Arduino sensors:** make `SensorHub.read()` in `sensors.py` return the real value under the same key (`fsr`, `bpm` / `spo2` / `pi` / `ppg_samples`, `dht_t` / `dht_h`) and set the badge to `LIVE` in `SensorHub.sources`. The tiles follow automatically.
+- **Thermal camera:** `--thermal mlx90640`, or write your own class in `thermal_camera.py`.
+- **ESP32-CAM:** upload `esp32_cam_usb_stream/esp32_cam_usb_stream.ino`, then run with `--camera serial:/dev/ttyUSB0`.
+
+## Camera source (inside the window)
+
+Above the two camera slots you can choose what the camera shows: demo, sample video, sample images (normal / inflamed / wound), your own image or video file, live USB camera (ESP32-CAM), live webcam, or a network stream. For live sources type the port / number / URL and press **Connect**.
+
+In the thermal slot choose *Simulated thermal camera*, *Redness map from the camera* or *MLX90640*. When you play an image, video or live camera, pick *Redness map from the camera* so the thermal slot matches it.
+
+## Project files
+
 | File | Job |
 |---|---|
-| main.py | builds the window from the modules below and runs it |
-| config.py | sizes, thresholds, zones - tune everything here |
-| camera.py | camera input (demo / sample image or video / your own file / USB ESP32-CAM / webcam / stream) + the panel with two slots: thermal analysis and AI analysis, with a source selector |
-| make_samples.py | recreates the files in samples/ (optional) |
-| samples/ | demo_feet.mp4 (15 s story: normal -> inflamed -> wound) and 3 sample images |
-| thermal_camera.py | thermal camera code (simulated + MLX90640 skeleton) and the left-vs-right diabetic-foot analysis |
-| ai_analysis.py | AI / image analysis of the foot (redness, dark areas, optional trained YOLO model) |
-| services.py | status of both feet, risk stage 0-3, findings and advice (English / Arabic) |
-| foot_3d.py | interactive 3D feet only (solid feet on a grid mat, colour map under them) |
-| sensors.py | models of each sensor with simulated values (FSR, load cell, PPG, DHT11, LRA, UV) |
-| sensor_fields.py | the on-screen field for each sensor (maps, pulse waveform, vibration panel, sensor tiles) |
-| foot_geometry.py | shared foot shape and colour maps |
-| widgets.py | the picture widget that fills the space it is given |
-| esp32_cam_usb_stream/ | Arduino sketch for the ESP32 camera (later stage) |
+| `main.py` | builds the window from the modules below and runs it |
+| `config.py` | sizes, thresholds, zones – tune everything here |
+| `camera.py` | camera input and the thermal / AI analysis panel with a source selector |
+| `thermal_camera.py` | thermal camera (simulated + MLX90640 skeleton) and left-vs-right analysis |
+| `ai_analysis.py` | image analysis of the foot (redness, dark areas, optional YOLO model) |
+| `services.py` | status of both feet, risk stage 0–3, findings and advice (EN / AR) |
+| `sensors.py` | one model per sensor with simulated values (FSR, load cell, PPG, DHT11, LRA, UV) |
+| `sensor_fields.py` | on-screen fields for each sensor (maps, pulse waveform, vibration panel, tiles) |
+| `foot_3d.py` | interactive 3D feet on a grid mat with the colour map under them |
+| `foot_geometry.py` | shared foot shape and colour maps |
+| `widgets.py` | picture widget that fills the space it is given |
+| `make_samples.py` | recreates the files in `samples/` (optional) |
+| `samples/` | `demo_feet.mp4` (15 s story: normal → inflamed → wound) and 3 sample images |
+| `esp32_cam_usb_stream/` | Arduino sketch for the ESP32 camera |
 
-## Choosing what the camera shows (inside the window)
-Above the two camera slots:
-* **Camera source**: Demo | Sample video | Sample image (normal / inflamed / wound) | My image file... | My video file... |
-  Live USB camera (ESP32-CAM) | Live webcam | Live network stream.
-  For the live options type the port / number / URL in the box and press Connect.
-* **Thermal slot**: Simulated thermal camera | Redness map from the camera | MLX90640 thermal camera.
-  When you play an image, video or live camera, choose "Redness map from the camera" so the thermal slot matches it.
-* "Simulated situation" (top of the window) drives the simulated sensors, the demo camera and the simulated thermal camera.
+## Team
 
-## Going from simulation to real hardware (later)
-* Arduino Nano sensors: replace the classes in `sensors.py` (one sensor = one class) and `LRAActuator`.
-* Real thermal camera: `--thermal mlx90640` (skeleton, untested) or write your own class in `thermal_camera.py`.
-* ESP32 camera over USB: upload the sketch, then `--camera serial:/dev/ttyUSB0`.
+<!-- Add the team members here, for example:
+- Name – role
+- Name – role -->
 
-Screening aid / decision support only - not a medical diagnosis.p
+---
+
+## ملخص بالعربي
+
+**SMED** نظام مراقبة للقدم السكرية يجمع قراءات الضغط والوزن والنبض والحرارة وتحليل الصورة للقدمين، ويحولها إلى مستوى خطورة من 0 إلى 3 مع نتائج ونصائح بالعربي والإنجليزي. يعمل الحين بحساسات محاكاة بالكامل بدون أي جهاز، وربط الحساسات الحقيقية هو المرحلة القادمة. لتشغيله: `pip install -r requirements.txt` ثم `python main.py`.
+
+> هذا النظام أداة مساعدة للفحص المبدئي ودعم القرار فقط، وليس تشخيصاً طبياً.
